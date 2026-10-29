@@ -98,6 +98,15 @@ public interface IPathingBehavior extends IBehavior {
     boolean cancelEverything();
 
     /**
+     * Cancels only the current path segment, if that's safe right now (not mid-jump, mid-parkour...), so
+     * the process in control plans a new path from where the player is (Humanlike Baritone fork: the
+     * executor's watchdog repaths with this after a stretch without progress).
+     *
+     * @return Whether the segment was canceled
+     */
+    boolean cancelSegmentIfSafe();
+
+    /**
      * PLEASE never call this
      * <p>
      * If cancelEverything was like "kill" this is "sudo kill -9". Or shutting off your computer.

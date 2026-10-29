@@ -21,12 +21,16 @@ import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.TickEvent;
 import baritone.api.utils.IInputOverrideHandler;
+import baritone.api.utils.IIntentSink;
 import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
+import baritone.pathing.path.PathExecutor;
 import net.minecraft.client.player.KeyboardInput;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An interface with the game's control system allowing the ability to
@@ -89,6 +93,27 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         }
         if (isInputForcedDown(Input.CLICK_LEFT)) {
             setInputForceState(Input.CLICK_RIGHT, false);
+        }
+        IIntentSink sink = baritone.getIntentSink();
+        if (sink != null) {
+            // The sink's owner presses the real keys: no input override, no clicking for it
+            blockBreakHelper.stopBreakingBlock();
+            if (ctx.player().input.getClass() == PlayerMovementInput.class) {
+                ctx.player().input = new KeyboardInput(ctx.minecraft().options);
+            }
+            Set<Input> held = EnumSet.noneOf(Input.class);
+            inputForceStateMap.forEach((input, down) -> {
+                if (down) {
+                    held.add(input);
+                }
+            });
+            // The path executor takes SPRINT over from the movements and decides sprinting itself
+            PathExecutor current = baritone.getPathingBehavior().getCurrent();
+            if (current != null && current.isSprinting()) {
+                held.add(Input.SPRINT);
+            }
+            sink.inputs(held);
+            return;
         }
         blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
         blockPlaceHelper.tick(isInputForcedDown(Input.CLICK_RIGHT));

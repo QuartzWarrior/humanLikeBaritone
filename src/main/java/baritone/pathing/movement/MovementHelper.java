@@ -172,6 +172,11 @@ public interface MovementHelper extends ActionCosts, Helper {
         }
         FluidState fluidState = state.getFluidState();
         if (!fluidState.isEmpty()) {
+            // hb: a waterlogged solid (mangrove roots, leaves) stops a player like the solid it is,
+            // rather than being swum through like the water it holds
+            if (!state.isPathfindable(PathComputationType.LAND)) {
+                return NO;
+            }
             if (fluidState.getType().getAmount(fluidState) != 8) {
                 return NO;
             } else {

@@ -23,6 +23,7 @@ import baritone.api.behavior.ILookBehavior;
 import baritone.api.behavior.look.IAimProcessor;
 import baritone.api.behavior.look.ITickableAimProcessor;
 import baritone.api.event.events.*;
+import baritone.api.utils.IIntentSink;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.behavior.look.ForkableRandom;
@@ -65,6 +66,13 @@ public final class LookBehavior extends Behavior implements ILookBehavior {
 
     @Override
     public void updateTarget(Rotation rotation, boolean blockInteract) {
+        IIntentSink sink = baritone.getIntentSink();
+        if (sink != null) {
+            // The sink's owner turns the camera with the real mouse; never rotate the player here
+            this.target = null;
+            sink.look(rotation, blockInteract);
+            return;
+        }
         this.target = new Target(rotation, Target.Mode.resolve(ctx, blockInteract));
     }
 

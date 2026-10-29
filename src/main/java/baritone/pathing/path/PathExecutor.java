@@ -234,7 +234,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true;
         } else {
             sprintNextTick = shouldSprintNextTick();
-            if (!sprintNextTick) {
+            if (!sprintNextTick && behavior.baritone.getIntentSink() == null) {
                 ctx.player().setSprinting(false); // letting go of control doesn't make you stop sprinting actually
             }
             ticksOnCurrent++;

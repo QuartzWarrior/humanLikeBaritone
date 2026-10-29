@@ -265,7 +265,8 @@ public class MovementTraverse extends Movement {
             }
             Block low = BlockStateInterface.get(ctx, src).getBlock();
             Block high = BlockStateInterface.get(ctx, src.above()).getBlock();
-            if (ctx.player().position().y > src.y + 0.1D && !ctx.player().onGround() && (MovementHelper.isClimbable(low) || MovementHelper.isClimbable(high))) {
+            // hb: not in water, where a player floats and is never on the ground, so the wait never ends
+            if (ctx.player().position().y > src.y + 0.1D && !ctx.player().onGround() && !ctx.player().isInWater() && (MovementHelper.isClimbable(low) || MovementHelper.isClimbable(high))) {
                 // hitting W could cause us to climb the ladder instead of going forward
                 // wait until we're on the ground
                 return state;

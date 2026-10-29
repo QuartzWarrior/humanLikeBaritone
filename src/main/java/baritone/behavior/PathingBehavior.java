@@ -111,7 +111,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
 
     @Override
     public void onPlayerSprintState(SprintStateEvent event) {
-        if (isPathing()) {
+        // With an intent sink, sprinting goes out as the SPRINT input and the sink's owner holds the key
+        if (isPathing() && baritone.getIntentSink() == null) {
             event.setState(current.isSprinting());
         }
     }

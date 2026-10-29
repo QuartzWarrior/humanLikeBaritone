@@ -25,7 +25,9 @@ import baritone.api.event.listener.IEventBus;
 import baritone.api.pathing.calc.IPathingControlManager;
 import baritone.api.process.*;
 import baritone.api.selection.ISelectionManager;
+import baritone.api.utils.IBreakChooser;
 import baritone.api.utils.IInputOverrideHandler;
+import baritone.api.utils.IIntentSink;
 import baritone.api.utils.IPlayerContext;
 
 /**
@@ -120,6 +122,33 @@ public interface IBaritone {
      * @see IPlayerContext
      */
     IPlayerContext getPlayerContext();
+
+    /**
+     * Hands Baritone's look and input intent to {@code sink} instead of applying it (Humanlike
+     * Baritone fork); {@code null} restores the normal behavior.
+     *
+     * @param sink The sink, or {@code null}
+     * @see IIntentSink
+     */
+    void setIntentSink(IIntentSink sink);
+
+    /**
+     * @return The current {@link IIntentSink}, or {@code null} if Baritone applies its own intent
+     */
+    IIntentSink getIntentSink();
+
+    /**
+     * Lets {@code chooser} pick which block the builder breaks next (Humanlike Baritone fork).
+     *
+     * @param chooser The chooser, or {@code null} for Baritone's own order
+     * @see IBreakChooser
+     */
+    void setBreakChooser(IBreakChooser chooser);
+
+    /**
+     * @return The current {@link IBreakChooser}, or {@code null} if Baritone uses its own order
+     */
+    IBreakChooser getBreakChooser();
 
     /**
      * @return The {@link IEventBus} instance
