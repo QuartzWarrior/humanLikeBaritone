@@ -544,12 +544,18 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     private int chestWaits;
 
-    // hb: CHEST_PAIRS: a chest of a pair, placed against plain rock (nothing that opens when clicked)
+    // hb: CHEST_PAIRS: a chest of a pair, placed against a block that does nothing when clicked
     private boolean pairsChest(Placement placement, BuilderCalculationContext bcc) {
         BlockPos at = placement.placeAgainst.relative(placement.side);
         BlockState desired = bcc.getSchematic(at.getX(), at.getY(), at.getZ(), bcc.bsi.get0(at.getX(), at.getY(), at.getZ()));
         return desired != null && desired.getBlock() instanceof ChestBlock && desired.getValue(ChestBlock.TYPE) != net.minecraft.world.level.block.state.properties.ChestType.SINGLE
-                && plain(ctx.world().getBlockState(placement.placeAgainst));
+                && quiet(ctx.world().getBlockState(placement.placeAgainst));
+    }
+
+    // hb: CHEST_PAIRS: clicked, nothing happens: rock, and logs, planks and glass (a chest went onto the
+    // log under it sneaking, and came out single beside its other half)
+    private static boolean quiet(BlockState state) {
+        return !state.hasBlockEntity() && (plain(state) || state.is(BlockTags.LOGS) || state.is(BlockTags.PLANKS) || state.is(BlockTags.IMPERMEABLE));
     }
 
     // hb: CHEST_PAIRS: placed from the look and crouch as they are, the chest pairs as wanted, or its other
@@ -901,6 +907,10 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (ctx.isLookingAt(toSet.get().first()) && !ctx.player().isShiftKeyDown()) {
                 baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             }
+            if (placeChecks++ % 20 == 0) {
+                logDebug("Setting the repeater at " + toSet.get().first() + ", looking at it " + ctx.isLookingAt(toSet.get().first())
+                        + ", sneaking " + ctx.player().isShiftKeyDown()); // hb: debug
+            }
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
@@ -1014,6 +1024,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     private void noteSet(BetterBlockPos pos, BlockState current, BlockState desired) {
         if (setWrong(current, desired)) {
+            if (!toSet.contains(pos)) {
+                logDebug("Repeater at " + pos + " to set: delay " + current.getValue(RepeaterBlock.DELAY) + ", wants " + desired.getValue(RepeaterBlock.DELAY));
+            }
             toSet.add(pos);
         } else {
             toSet.remove(pos);

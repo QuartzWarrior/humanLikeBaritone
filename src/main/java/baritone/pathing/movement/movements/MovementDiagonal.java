@@ -108,6 +108,13 @@ public class MovementDiagonal extends Movement {
         return ImmutableSet.of(src, dest, diagA, diagB);
     }
 
+    // hb: fences, walls and fence gates stand 1.5 high
+    private static boolean tallerThanBlock(BlockState state) {
+        Block block = state.getBlock();
+        return block instanceof net.minecraft.world.level.block.FenceBlock || block instanceof net.minecraft.world.level.block.WallBlock
+                || block instanceof net.minecraft.world.level.block.FenceGateBlock;
+    }
+
     public static void cost(CalculationContext context, int x, int y, int z, int destX, int destZ, MutableMoveResult res) {
         if (!MovementHelper.canWalkThrough(context, destX, y + 1, destZ)) {
             return;
@@ -208,6 +215,14 @@ public class MovementDiagonal extends Movement {
         }
         double optionA = MovementHelper.getMiningDurationTicks(context, x, y, destZ, pb0, false);
         double optionB = MovementHelper.getMiningDurationTicks(context, destX, y, z, pb2, false);
+        // hb: a corner over a fence or a wall is in the way at the feet: they stand half a block into the
+        // cell above them. Taken for open, a diagonal past a fence post bumped into it, over and over
+        if (tallerThanBlock(context.get(x, y - 1, destZ))) {
+            optionA += 1_000_000;
+        }
+        if (tallerThanBlock(context.get(destX, y - 1, z))) {
+            optionB += 1_000_000;
+        }
         if (optionA != 0 && optionB != 0) {
             // check these one at a time -- if pb0 and pb2 were nonzero, we already know that (optionA != 0 && optionB != 0)
             // so no need to check pb1 as well, might as well return early here

@@ -404,7 +404,11 @@ public class PathExecutor implements IPathExecutor, Helper {
 
             if (pathPosition < path.length() - 2) {
                 IMovement next = path.movements().get(pathPosition + 1);
-                if (next instanceof MovementAscend && current.getDirection().above().equals(next.getDirection().below())) {
+                // hb: and only once the descend has dug its way: jumped straight over, the rock still over the dip
+                // (a cell the descend was to break, and the ascend isn't) was walked into, every tick, for good
+                if (next instanceof MovementAscend && current.getDirection().above().equals(next.getDirection().below())
+                        && MovementHelper.canWalkThrough(ctx, current.getDest().above())
+                        && MovementHelper.canWalkThrough(ctx, current.getDest().above(2))) {
                     // a descend then an ascend in the same direction
                     pathPosition++;
                     onChangeInPathPosition();
